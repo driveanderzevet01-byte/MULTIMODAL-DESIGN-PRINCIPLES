@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Multimodal Design Principles</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one centered "slide" card per step, with a numbered step rail above it; quizzes gate the Next button like the MDA & CDA lecture. */
+:root{
+  --bg:#eef1f4; --card:#ffffff; --ink:#151a22; --muted:#4f5867; --line:#d6dbe3; --soft:#f4f6f9;
+  --accent:#2445c4; --accent-ink:#ffffff; --mark:#ffd84a; --mark-ink:#151a22;
+  --good:#1b7a45; --good-bg:#e3f4ea; --bad:#b4261c; --bad-bg:#fbe7e5;
+  --c1:#2445c4; --c2:#d9822b; --c3:#1b8a7a;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11141a; --card:#1a1f28; --ink:#e8ecf2; --muted:#a6afbd; --line:#2f3644; --soft:#222834;
+  --accent:#93a8ff; --accent-ink:#0e1220; --mark:#ffd84a; --mark-ink:#151a22;
+  --good:#7fd6a2; --good-bg:#16301f; --bad:#ff9a8f; --bad-bg:#3a1b18;
+  --c1:#93a8ff; --c2:#f0a35a; --c3:#5cc9b6; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11141a; --card:#1a1f28; --ink:#e8ecf2; --muted:#a6afbd; --line:#2f3644; --soft:#222834;
+  --accent:#93a8ff; --accent-ink:#0e1220; --mark:#ffd84a; --mark-ink:#151a22;
+  --good:#7fd6a2; --good-bg:#16301f; --bad:#ff9a8f; --bad-bg:#3a1b18;
+  --c1:#93a8ff; --c2:#f0a35a; --c3:#5cc9b6; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:20px 48px}
+#app{max-width:880px;margin:0 auto}
+.rail{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px;align-items:center}
+.rail button{font:600 12px/1 var(--body);letter-spacing:.04em;border:1px solid var(--line);background:var(--card);color:var(--muted);
+  border-radius:999px;padding:6px 10px;cursor:pointer}
+.rail button[aria-current="step"]{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.rail button:disabled{opacity:.45;cursor:not-allowed}
+.rail .count{margin-left:auto;font:500 12px var(--mono);color:var(--muted)}
+.slide{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:clamp(20px,4vw,40px);min-height:480px;display:flex;flex-direction:column;gap:14px}
+.slide>*{min-width:0}
+.eyebrow{font:600 12px var(--body);text-transform:uppercase;letter-spacing:.12em;color:var(--accent)}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:clamp(2rem,5vw,3.1rem);font-weight:800;letter-spacing:-.01em}
+h2{font-size:clamp(1.5rem,3.4vw,2rem);font-weight:800}
+h3{font-size:1.12rem;font-weight:600;margin-top:6px}
+p{margin:0;max-width:68ch}
+ul,ol{margin:0;padding-left:1.3em;max-width:68ch}
+li{margin:.25em 0}
+mark{background:var(--mark);color:var(--mark-ink);padding:0 .2em;border-radius:3px}
+.lede{font-size:1.12rem;color:var(--muted)}
+.tags{display:flex;flex-wrap:wrap;gap:8px}
+.tags span{border:1.5px solid var(--ink);border-radius:999px;padding:5px 12px;font-weight:600;font-size:.9rem}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.box{background:var(--soft);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.box h4{margin:0;font:600 12px var(--body);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.term{font-weight:700}
+.source{font-size:.85rem;color:var(--muted)}
+.btn{font:600 15px var(--body);border:1.5px solid var(--ink);background:var(--card);color:var(--ink);border-radius:999px;padding:9px 18px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn:focus-visible,.rail button:focus-visible,input:focus-visible,label.opt:focus-within{outline:3px solid var(--mark);outline-offset:2px}
+.toggle{display:inline-flex;border:1.5px solid var(--ink);border-radius:999px;overflow:hidden;width:max-content;max-width:100%}
+.toggle button{font:600 14px var(--body);border:0;background:transparent;color:var(--ink);padding:7px 14px;cursor:pointer}
+.toggle button[aria-pressed="true"]{background:var(--ink);color:var(--card)}
+.nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:auto;padding-top:16px;border-top:1px solid var(--line);flex-wrap:wrap}
+/* demo: poster */
+.poster{background:#fbfaf7;color:#1b1f27;border-radius:10px;border:1px solid var(--line);padding:18px;display:flex;flex-direction:column;gap:6px;max-width:360px;width:100%;aspect-ratio:4/5;font-family:var(--body)}
+.poster .p-title,.poster .p-sub,.poster .p-info,.poster .p-cta,.poster .p-logo{transition:all .25s}
+.weak .p-title,.weak .p-sub,.weak .p-info,.weak .p-cta,.weak .p-logo{font-size:15px;font-weight:400;color:#1b1f27;background:none;padding:0;text-align:center}
+.weak .p-logo{font-size:16px;font-weight:700}
+.strong .p-logo{order:9;font-size:11px;color:#596273;text-align:left}
+.strong .p-title{font:800 34px/1.05 var(--display);color:#1b1f27}
+.strong .p-sub{font-size:15px;color:#3e4655}
+.strong .p-info{margin-top:auto;border-top:2px solid #1b1f27;padding-top:8px;font-size:14px;font-weight:600}
+.strong .p-cta{background:#2445c4;color:#fff;border-radius:999px;padding:8px 14px;font-weight:700;font-size:14px;width:max-content}
+/* demo: gestalt */
+.dots{display:grid;grid-template-columns:repeat(6,22px);gap:14px;width:max-content;transition:all .3s}
+.dots.grouped{grid-template-columns:repeat(2,22px) 22px repeat(2,22px) 22px;column-gap:6px}
+.dots i{display:block;width:22px;height:22px;border-radius:50%;background:var(--ink)}
+.dots.grouped i:nth-child(3n){visibility:hidden}
+.dots.similar i:nth-child(3n+1){background:var(--c2);border-radius:4px}
+/* demo: type */
+.typedemo{border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--soft)}
+.typedemo.bad p{text-transform:uppercase;text-align:center;letter-spacing:.14em;line-height:1.15;font-size:15px;max-width:none}
+.typedemo.good p{line-height:1.6;max-width:60ch}
+/* demo: contrast */
+.contrast{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:14px;align-items:start}
+.swatch{border-radius:10px;padding:16px;border:1px solid var(--line);min-height:120px;display:flex;flex-direction:column;gap:4px;justify-content:center}
+.swatch .big{font:800 24px var(--display)}
+.ratio{font:600 2rem var(--mono)}
+.pill{display:inline-block;border-radius:999px;padding:2px 10px;font-weight:700;font-size:.85rem;margin:2px 4px 2px 0}
+.pill.ok{background:var(--good-bg);color:var(--good)}
+.pill.no{background:var(--bad-bg);color:var(--bad)}
+.colors{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.colors label{display:flex;gap:6px;align-items:center;font-weight:600}
+.colors input[type=color]{width:44px;height:34px;border:1px solid var(--line);border-radius:6px;background:var(--card);padding:2px}
+/* demo: K&vL zones */
+.zones{display:grid;grid-template-columns:1fr 1.2fr 1fr;grid-template-rows:auto auto;border:1.5px solid var(--ink);border-radius:10px;overflow:hidden;font-size:.92rem}
+.zones div{padding:10px 12px;border:1px dashed var(--line)}
+.zones .c{grid-column:2;grid-row:1 / span 2;background:var(--soft);display:flex;flex-direction:column;justify-content:center;text-align:center}
+.zones b{display:block;font-family:var(--display)}
+/* demo: chart */
+.chart{display:flex;align-items:flex-end;gap:16px;height:170px;padding:10px 6px 0;border-bottom:2px solid var(--ink)}
+.chart .bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;height:100%}
+.chart .bar i{display:block;width:100%;max-width:70px;border-radius:6px 6px 0 0}
+.chart .lab{font-size:.82rem;font-weight:600;text-align:center}
+.gray .chart{filter:grayscale(1)}
+.colorOnly .lab,.colorOnly .val{visibility:hidden}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.85rem}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+/* quiz */
+.quiz{display:flex;flex-direction:column;gap:18px}
+.q{display:flex;flex-direction:column;gap:8px;padding-bottom:14px;border-bottom:1px dashed var(--line)}
+.q:last-child{border-bottom:0}
+.qt{font-weight:600}
+.opts{display:flex;flex-direction:column;gap:6px}
+label.opt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:9px 12px;cursor:pointer;background:var(--card)}
+label.opt input{margin-top:5px;accent-color:var(--accent)}
+.blank{font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);width:100%;max-width:420px}
+.fb{font-weight:600;font-size:.95rem}
+.fb.ok{color:var(--good)} .fb.no{color:var(--bad)}
+.notice{font-weight:600;color:var(--bad)}
+.score{font:700 1.1rem var(--display)}
+/* checklist */
+.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:14px}
+.checks .box label{display:flex;gap:8px;align-items:flex-start;font-size:.95rem;cursor:pointer}
+.checks input{margin-top:5px;accent-color:var(--accent)}
+.progress{height:8px;background:var(--soft);border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+.progress i{display:block;height:100%;background:var(--accent);width:0;transition:width .2s}
+.refs li{font-size:.92rem}
+.ix{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:14px}
+.ixcard{border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--card);display:flex;flex-direction:column;gap:10px;min-height:150px}
+.ixcard .tag{font:600 11px var(--body);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.plain{background:none;border:0;padding:0;font:inherit;color:var(--muted);font-size:.85rem;cursor:default;text-align:left}
+.ixmsg{font-weight:600;color:var(--good)}
+.ixmsg.err{color:var(--bad)}
+.tiny{font-size:10px;padding:1px 4px;border:1px solid var(--line);border-radius:3px;background:var(--soft);color:var(--ink);cursor:pointer}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+@media (max-width:520px){body{font-size:16px}.slide{min-height:0}}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <nav class="rail" id="rail" aria-label="Lecture steps"></nav>
+  <main class="slide" id="slide" tabindex="-1" aria-live="polite"></main>
+</div>
+
+<script>
+(function(){
+"use strict";
+var esc=function(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
+
+/* ---------- Quiz bank ---------- */
+var QUIZ={
+ intro:[
+  {q:"Which question should a designer answer BEFORE choosing fonts and colors?",o:["Which typeface looks the most modern?","Who is the audience, and what is the main message or action?","How many colors can the poster hold?","Which template is trending on Canva?"],a:1},
+  {q:"Why can a very attractive poster still be a weak design?",o:["Because attractive designs are always too colorful","Because it may hide information the audience needs, such as the date","Because posters should never use images","Because design is only about decoration"],a:1},
+  {q:"In multimodal design, elements like size, position and color are treated as…",o:["decoration added after writing the text","resources that carry meaning together with the words","optional extras for advanced designers","rules that only apply to websites"],a:1},
+  {q:"Fill in the blank: Multimodal design is the purposeful ________ of meaning-making resources such as text, image, color, sound and movement.",blank:["arrangement","organization","organisation","combination"]},
+  {q:"Fill in the blank: The seven principles are taught separately, but in a real design they work ________.",blank:["together"]}
+ ],
+ hier:[
+  {q:"What is visual hierarchy?",o:["Using as many colors as possible","Arranging elements by relative importance so viewers know where to look first","Putting the logo at the top of every design","Centering every element on the page"],a:1},
+  {q:"An event poster gives the title, date, sponsor logos and slogan the same font size. What is the most likely problem?",o:["The poster will print too slowly","Viewers must work out the reading order themselves","The colors will clash","Nothing; equal sizes are always clearer"],a:1},
+  {q:"Which Gestalt principle says that elements placed close together are seen as related?",o:["Similarity","Figure–ground","Proximity","Continuity"],a:2},
+  {q:"Fill in the blank: Look at a design for three seconds, then look away. If what you noticed first is not the main message, revise the ________.",blank:["hierarchy","visual hierarchy"]},
+  {q:"Fill in the blank: The Gestalt principle in which elements that share a color or shape are seen as one group is called ________.",blank:["similarity"]}
+ ],
+ layout:[
+  {q:"Which statement about grids is accurate?",o:["Grids force every design to look identical","A grid is a flexible underlying structure of columns, margins and spacing that keeps elements aligned","Grids are only for printed newspapers","Grids replace the need for hierarchy"],a:1},
+  {q:"Whitespace in a layout…",o:["is wasted space that should be filled","helps groups be recognized and keeps the page from feeling crowded","should always be removed on mobile","is only used in luxury brands"],a:1},
+  {q:"Your one-page guide is too crowded. What should you try FIRST?",o:["Shrink the font size","Add a busier background","Cut repeated wording or reorganize the content","Switch to a decorative font"],a:2},
+  {q:"Fill in the blank: Josef Müller-Brockmann's classic book on organizing pages with columns and margins is called Grid ________ in Graphic Design.",blank:["systems"]},
+  {q:"Fill in the blank: Repeating the same margins, title position and footer on every slide of a carousel helps viewers see the slides as one ________.",blank:["sequence","series","set","system"]}
+ ],
+ type:[
+  {q:"Which is the clearest difference between a typeface and a font?",o:["They are completely unrelated","A typeface is the overall design; a font is one specific style or instance of it (e.g., Bold)","A font is always handwritten","A typeface is only used in print"],a:1},
+  {q:"Where is a decorative script typeface LEAST appropriate on a poster?",o:["A short expressive headline","The date, venue and registration details","A one-word logo","An event mood word"],a:1},
+  {q:"Why are long centered paragraphs usually harder to read?",o:["Each line starts at a different position, so the eye must search for the next line","Centered text uses more ink","Screen readers cannot read centered text","Centering always reduces the font size"],a:0},
+  {q:"Fill in the blank: The vertical space between lines of text is called line spacing or ________.",blank:["leading"]},
+  {q:"Fill in the blank: If everything is bold, italic and uppercase, ________ stops working.",blank:["emphasis"]}
+ ],
+ color:[
+  {q:"Josef Albers's Interaction of Color teaches that…",o:["each color has one universal meaning","a color's appearance changes depending on the colors around it","red always means danger","only primary colors should be used"],a:1},
+  {q:"Under WCAG 2.2 (SC 1.4.3), what is the minimum contrast ratio for normal-size body text?",o:["2:1","3:1","4.5:1","7:1"],a:2},
+  {q:"A chart shows three workshops only as three similar shades of green with no labels. What is the best fix?",o:["Make the greens brighter","Use clearly different colors AND add labels, values or a legend","Remove the chart","Use only one color"],a:1},
+  {q:"Fill in the blank: For large text (about 18 pt, or 14 pt bold), WCAG requires a minimum contrast ratio of ________:1.",blank:["3"]},
+  {q:"Fill in the blank: Reserve your ________ color for the most important information, such as the call-to-action button.",blank:["accent"]}
+ ],
+ comp:[
+  {q:"How does composition differ from layout?",o:["They mean exactly the same thing","Layout is the organizing structure; composition is how elements work together within it as a whole","Composition only concerns photographs","Layout is about color, composition is about fonts"],a:1},
+  {q:"In Kress & van Leeuwen's information value, what is usually placed on the LEFT of a Western layout?",o:["New information","Given, already-known information","The ideal or promise","Only decoration"],a:1},
+  {q:"A person in a photo looks toward the headline. What does this do?",o:["It distracts from the message","It creates visual flow that can guide the viewer's eye to the headline","It breaks the grid","It lowers contrast"],a:1},
+  {q:"Fill in the blank: In Kress & van Leeuwen's visual grammar, the degree to which an element attracts attention (through size, color, contrast or position) is called ________.",blank:["salience"]},
+  {q:"Fill in the blank: A composition with similar visual weight on both sides is ________; one balanced through different sizes and positions is asymmetrical.",blank:["symmetrical","symmetric"]}
+ ],
+ access:[
+  {q:"Quiz answers are marked ONLY green (correct) and red (wrong). Which WCAG criterion does this break?",o:["1.4.1 Use of Color","2.4.2 Page Titled","1.1.1 only","None, color is enough"],a:0},
+  {q:"Which is a good accessibility fix for a poster with a QR code?",o:["Make the QR code smaller","Add the written URL and a label saying what the code is for","Remove all text","Put the QR code in the background image"],a:1},
+  {q:"Which statement about WCAG is accurate?",o:["It is a legal rule for every printed poster","It is a technical standard for web content; for print we apply its ideas as inclusive principles","It only covers videos","It was replaced by Gestalt psychology"],a:1},
+  {q:"Fill in the blank: Videos should provide ________ for spoken content, and audio-only content should have a text transcript.",blank:["captions","subtitles","caption"]},
+  {q:"Fill in the blank: Informative images on a website need alternative ________ so assistive technology can describe them.",blank:["text","alt text","alt-text"]}
+ ],
+ inter:[
+  {q:"In Don Norman's terms, what is a signifier?",o:["The hidden code behind a button","A perceivable cue that shows people where and how to act, such as a button shape or an underlined link","The sound a page makes when it loads","The color palette of a brand"],a:1},
+  {q:"A student taps “Submit” and nothing visibly happens. Which principle is missing?",o:["Feedback","Similarity","Whitespace","Salience"],a:0},
+  {q:"Which design follows the usability heuristic “user control and freedom”?",o:["A quiz that cannot be restarted","A Back button and an Undo option after an action","A video that autoplays with no pause button","A form that clears everything after one error"],a:1},
+  {q:"Fill in the blank: Interactive parts should work with a mouse, a touch screen and the ________ alone (WCAG SC 2.1.1).",blank:["keyboard"]},
+  {q:"Fill in the blank: WCAG 2.2 SC 2.5.8 asks for click or tap targets of at least 24 by 24 CSS ________.",blank:["pixels","px","pixel"]}
+ ]
+};
+
+/* ---------- Slides ---------- */
+var S=[];
+S.push({rail:"Start",html:function(){return '<div class="eyebrow">Multimodal Literacy · Final Project Support</div>'+
+ '<h1>Multimodal Design Principles</h1>'+
+ '<p class="lede">How visual choices organize meaning, guide attention, support reading, and make your message usable by more people.</p>'+
+ '<div class="tags"><span>Visual hierarchy</span><span>Layout</span><span>Typography</span><span>Color</span><span>Composition</span><span>Accessibility</span><span>Interactive features</span></div>'+
+ '<div class="box"><h4>Why this matters for your final project</h4><p>Your group will build at least 3 related media pieces that answer: <b>“How can multimodal communication solve a real need in the English Literature department?”</b> Each media must use all four modes: <b>visual, audio, reading (text) and kinesthetic</b>. These seven principles are the checklist you will use to plan, critique and revise those media.</p></div>';}});
+S.push({rail:"Intro",html:function(){return '<div class="eyebrow">Introduction</div><h2>Designing meaning, not decoration</h2>'+
+ '<p><span class="term">Multimodal design</span> is the purposeful arrangement of meaning-making resources: written language, images, color, typography, spatial arrangement, sound and movement. Their size, position, style and relationship shape how viewers interpret the message.</p>'+
+ '<div class="grid2"><div class="box"><h4>Start every design with 3 questions</h4><ol><li>Who is the audience?</li><li>What is the main message or action?</li><li>What must they notice, understand and remember?</li></ol><p>The answers become your criteria. An attractive poster that hides its date has failed.</p></div>'+
+ '<div class="box"><h4>Example: a free English-speaking workshop poster</h4><ul><li><b>Prominent:</b> title and one benefit line</li><li><b>Easy to find:</b> date, time, venue</li><li><b>Looks actionable:</b> registration link</li><li><b>Never competing:</b> decorative background</li></ul></div></div>';}});
+S.push({quiz:"intro",rail:"Quiz 1",title:"Check your understanding: Introduction"});
+S.push({rail:"Hierarchy",html:function(){return '<div class="eyebrow">Principle 1</div><h2>Visual hierarchy: what matters first</h2>'+
+ '<p><span class="term">Visual hierarchy</span> arranges elements by relative importance so viewers know where to look first, what to read next, and what is secondary. Build it with differences in <mark>size, contrast, position, spacing, weight, color and grouping</mark>.</p>'+
+ '<div class="grid2"><div class="box"><h4>Try it: same content, two hierarchies</h4><div class="toggle" role="group" aria-label="Hierarchy"><button type="button" data-h="weak" aria-pressed="true">Weak</button><button type="button" data-h="strong" aria-pressed="false">Strong</button></div>'+
+ '<div class="poster weak" id="poster"><div class="p-logo">EL DEPARTMENT · JIU</div><div class="p-title">Speak with Confidence</div><div class="p-sub">Free English Workshop for first-year students</div><div class="p-info">Thu, 20 Nov · 13.00–15.00 · Room 402</div><div class="p-cta">Register: bit.ly/el-speak</div></div></div>'+
+ '<div class="box"><h4>How to build it</h4><ol><li>Name the <b>primary</b> message; give it the strongest emphasis.</li><li>Give supporting information a <b>second</b> level.</li><li>Group details (date, time, venue) as a <b>third</b> level.</li><li>Make the action look like an action.</li></ol><h4>Gestalt foundations</h4><p><b>Proximity:</b> close items read as related. <b>Similarity:</b> shared color or shape reads as a group. <b>Figure–ground:</b> we separate a focal figure from its background.</p><h4>The 3-second test</h4><p>Look for 3 seconds, look away. What did you notice first? If it isn’t the main message, revise.</p></div></div>';},
+ init:function(el){el.querySelectorAll('[data-h]').forEach(function(b){b.onclick=function(){el.querySelectorAll('[data-h]').forEach(function(x){x.setAttribute('aria-pressed',x===b);});el.querySelector('#poster').className='poster '+b.dataset.h;};});}});
+S.push({quiz:"hier",rail:"Quiz 2",title:"Check your understanding: Visual hierarchy"});
+S.push({rail:"Layout",html:function(){return '<div class="eyebrow">Principle 2</div><h2>Layout: organizing information in space</h2>'+
+ '<p><span class="term">Layout</span> is the arrangement of text, images, shapes and empty space. It is an information structure made visible: what belongs together, what comes first, where details live.</p>'+
+ '<div class="grid2"><div class="box"><h4>Try it: grouping with space and similarity</h4><div class="toggle" role="group" aria-label="Grouping"><button type="button" data-g="" aria-pressed="true">Even</button><button type="button" data-g="grouped" aria-pressed="false">Proximity</button><button type="button" data-g="similar" aria-pressed="false">Similarity</button></div>'+
+ '<div class="dots" id="dots">'+'<i></i>'.repeat(18)+'</div><p class="source">Even spacing reads as one block. Changing only the spacing or one feature creates groups, which is exactly what you do when you group the date, time and venue.</p></div>'+
+ '<div class="box"><h4>Core tools</h4><ul><li><b>Grid:</b> columns, rows, margins and gutters that keep elements aligned (Müller-Brockmann, <i>Grid Systems in Graphic Design</i>). Flexible, not a cage.</li><li><b>Alignment:</b> shared edges make content easy to scan.</li><li><b>Grouping:</b> related items near each other.</li><li><b>Whitespace:</b> not wasted; it makes groups visible.</li></ul><h4>Reading order</h4><p>On a webpage, the visual order should match the order assistive technology reads. Use real headings, not just big bold text.</p></div></div>'+
+ '<div class="box"><h4>Example: a 5-slide Instagram carousel</h4><p>Same margins, title position and footer on every slide. Slide 1 introduces, slides 2–4 explain three points, slide 5 summarizes or calls for action. Vary the visuals, keep the system.</p></div>';},
+ init:function(el){el.querySelectorAll('[data-g]').forEach(function(b){b.onclick=function(){el.querySelectorAll('[data-g]').forEach(function(x){x.setAttribute('aria-pressed',x===b);});el.querySelector('#dots').className='dots '+b.dataset.g;};});}});
+S.push({quiz:"layout",rail:"Quiz 3",title:"Check your understanding: Layout"});
+S.push({rail:"Type",html:function(){return '<div class="eyebrow">Principle 3</div><h2>Typography: making language visible and readable</h2>'+
+ '<p><span class="term">Typography</span> covers typeface, size, weight, spacing, line length, alignment and the heading–body relationship. Robert Bringhurst (<i>The Elements of Typographic Style</i>) frames it as a craft that should serve and clarify the text.</p>'+
+ '<div class="box"><h4>Try it: same paragraph, two treatments</h4><div class="toggle" role="group" aria-label="Typography"><button type="button" data-t="bad" aria-pressed="true">Hard to read</button><button type="button" data-t="good" aria-pressed="false">Readable</button></div>'+
+ '<div class="typedemo bad" id="typedemo"><p>Join our English Literature reading circle every Wednesday afternoon. We read one short story, discuss its themes in small groups, and practice summarizing it in our own words. New members are welcome at any time.</p></div></div>'+
+ '<div class="grid2"><div class="box"><h4>Do</h4><ul><li>Use 1–2 typefaces; build levels with size and weight.</li><li>Left-align paragraphs; center only short titles.</li><li>Comfortable leading and line length (about 45–75 characters).</li><li>Keep practical details plain and readable.</li><li>Test at real size, on a phone.</li></ul></div>'+
+ '<div class="box"><h4>Avoid</h4><ul><li>Script fonts for dates and venues.</li><li>ALL CAPS for full sentences.</li><li>Bolding everything (then nothing stands out).</li><li>Text over busy photos with no backing panel.</li><li>Stretched or squashed letters.</li></ul></div></div>';},
+ init:function(el){el.querySelectorAll('[data-t]').forEach(function(b){b.onclick=function(){el.querySelectorAll('[data-t]').forEach(function(x){x.setAttribute('aria-pressed',x===b);});el.querySelector('#typedemo').className='typedemo '+b.dataset.t;};});}});
+S.push({quiz:"type",rail:"Quiz 4",title:"Check your understanding: Typography"});
+S.push({rail:"Color",html:function(){return '<div class="eyebrow">Principle 4</div><h2>Color: contrast, grouping and tone</h2>'+
+ '<p>Color attracts attention, separates categories, builds identity and sets mood, but it has <b>no universal meaning</b>: red can mean danger, celebration or simply a brand. Josef Albers (<i>Interaction of Color</i>) showed that a color looks different depending on the colors around it, so test palettes as relationships.</p>'+
+ '<div class="box"><h4>Try it: contrast checker (WCAG 2.2 formula)</h4><div class="colors"><label for="fg">Text <input type="color" id="fg" value="#f5e663"></label><label for="bgc">Background <input type="color" id="bgc" value="#ffffff"></label>'+
+ '<button type="button" class="btn" data-p="#f5e663,#ffffff">Pale yellow on white</button><button type="button" class="btn" data-p="#1b1f27,#ffd84a">Dark on yellow</button><button type="button" class="btn" data-p="#8a8f98,#ffffff">Light gray on white</button></div>'+
+ '<div class="contrast"><div class="swatch" id="sw"><span class="big">Speak with Confidence</span><span>Thu, 20 Nov · Room 402</span></div><div><div class="ratio" id="ratio">–</div><div id="verdict"></div><p class="source">WCAG 2.2 SC 1.4.3: at least 4.5:1 for normal text, 3:1 for large text (about 18 pt, or 14 pt bold). SC 1.4.11: buttons and icons need 3:1 against their surroundings.</p></div></div></div>'+
+ '<div class="box"><h4>Build a limited palette</h4><p>Background · main text · <b>one accent</b> for the key action. Use labels, icons or patterns too, so meaning never depends on color alone.</p></div>';},
+ init:function(el){
+  var fg=el.querySelector('#fg'),bg=el.querySelector('#bgc');
+  function lum(hex){var c=[1,3,5].map(function(i){var v=parseInt(hex.substr(i,2),16)/255;return v<=0.04045?v/12.92:Math.pow((v+0.055)/1.055,2.4);});return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2];}
+  function upd(){var a=lum(fg.value),b=lum(bg.value),r=(Math.max(a,b)+0.05)/(Math.min(a,b)+0.05);
+   var sw=el.querySelector('#sw');sw.style.background=bg.value;sw.style.color=fg.value;
+   el.querySelector('#ratio').textContent=r.toFixed(2)+':1';
+   function p(ok,t){return '<span class="pill '+(ok?'ok':'no')+'">'+(ok?'✓ Pass':'✗ Fail')+' · '+t+'</span>';}
+   el.querySelector('#verdict').innerHTML=p(r>=4.5,'normal text')+p(r>=3,'large text');}
+  fg.oninput=bg.oninput=upd;
+  el.querySelectorAll('[data-p]').forEach(function(b){b.onclick=function(){var v=b.dataset.p.split(',');fg.value=v[0];bg.value=v[1];upd();};});
+  upd();}});
+S.push({quiz:"color",rail:"Quiz 5",title:"Check your understanding: Color"});
+S.push({rail:"Composition",html:function(){return '<div class="eyebrow">Principle 5</div><h2>Composition: making the whole work</h2>'+
+ '<p><span class="term">Composition</span> is how all elements work together as one whole: balance, emphasis, rhythm, proportion, direction, and the relation between elements and empty space. Layout gives the structure; composition makes it coherent.</p>'+
+ '<div class="grid2"><div class="box"><h4>Link to MDA: compositional meaning (Kress & van Leeuwen)</h4>'+
+ '<div class="zones"><div><b>Given</b>left: what we already know</div><div class="c"><b>Centre</b>nucleus; margins depend on it</div><div><b>New</b>right: what to pay attention to</div><div><b>Ideal</b>top: promise, idea</div><div><b>Real</b>bottom: facts, details, action</div></div>'+
+ '<p><b>Salience</b>: what attracts the eye most (size, contrast, color, sharpness, placement). <b>Framing</b>: lines and space that connect or separate elements. These tendencies are culturally shaped (e.g., left-to-right reading), not fixed laws.</p></div>'+
+ '<div class="box"><h4>Balance & flow</h4><ul><li><b>Symmetrical:</b> stable, formal.</li><li><b>Asymmetrical:</b> dynamic, still balanced through size, color and position.</li><li><b>Visual flow:</b> lines, arrows, gaze in a photo and alignment guide the eye; a person looking toward the headline pulls viewers there too.</li></ul>'+
+ '<h4>Example: “Switch It Off” poster</h4><p>Ideal (top): big photo of a hand turning off a light + headline. Real (bottom): three short tips, QR code and written URL. Every element supports one action.</p>'+
+ '<h4>Revision trick</h4><p>Remove one element at a time. If nothing is lost, you didn’t need it.</p></div></div>';}});
+S.push({quiz:"comp",rail:"Quiz 6",title:"Check your understanding: Composition"});
+S.push({rail:"Accessibility",html:function(){return '<div class="eyebrow">Principle 6</div><h2>Accessibility: more people can use the message</h2>'+
+ '<p><span class="term">Accessibility</span> means people with different abilities, devices and ways of perceiving can access and understand your media. Plan it from the start. For digital media, the standard is <b>WCAG 2.2</b> (W3C, 2023).</p>'+
+ '<div class="box" id="a11y"><h4>Try it: does the chart survive without color?</h4><div class="toggle" role="group" aria-label="Chart version"><button type="button" data-a="colorOnly" aria-pressed="true">Color only</button><button type="button" data-a="colorOnly gray" aria-pressed="false">Color only, grayscale</button><button type="button" data-a="gray" aria-pressed="false">Labeled, grayscale</button></div>'+
+ '<div id="chartwrap" class="colorOnly"><div class="chart" role="img" aria-label="Bar chart: workshop attendance. Speaking 42, Writing 28, Literature 35.">'+
+ '<div class="bar"><span class="val">42</span><i style="height:84%;background:var(--c1)"></i></div><div class="bar"><span class="val">28</span><i style="height:56%;background:var(--c2)"></i></div><div class="bar"><span class="val">35</span><i style="height:70%;background:var(--c3)"></i></div></div>'+
+ '<div class="chart" style="height:auto;border:0;padding-top:4px"><div class="bar lab">Speaking</div><div class="bar lab">Writing</div><div class="bar lab">Literature</div></div></div>'+
+ '<p class="source">With color only, grayscale makes the categories impossible to tell apart. Labels and values fix it (WCAG SC 1.4.1 Use of Color).</p></div>'+
+ '<div class="grid2"><div class="box"><h4>For your digital media</h4><ul><li>Contrast: 4.5:1 normal text, 3:1 large text (SC 1.4.3).</li><li>Never color alone (SC 1.4.1).</li><li>Real headings, lists and logical reading order.</li><li>Alt text for informative images (SC 1.1.1).</li><li>Captions for video, transcripts for audio (SC 1.2.1–1.2.2).</li><li>Buttons usable by keyboard, with clear labels.</li></ul></div>'+
+ '<div class="box"><h4>For print & posters</h4><p>WCAG is a web standard, not a rule for printed posters. Apply its ideas as inclusive principles: readable size, strong contrast, clear structure, a written URL beside every QR code.</p><p class="source">A checklist does not guarantee every design works for every person. Test with real users when you can.</p></div></div>';},
+ init:function(el){el.querySelectorAll('[data-a]').forEach(function(b){b.onclick=function(){el.querySelectorAll('[data-a]').forEach(function(x){x.setAttribute('aria-pressed',x===b);});el.querySelector('#chartwrap').className=b.dataset.a;};});}});
+S.push({quiz:"access",rail:"Quiz 7",title:"Check your understanding: Accessibility"});
+S.push({rail:"Interactive",html:function(){return '<div class="eyebrow">Principle 7</div><h2>Interactive features: designing for action</h2>'+
+ '<p>Your media must include the <b>kinesthetic</b> mode, so viewers will click, tap, drag, choose and type. Interactive features turn a design into something people <i>do</i>. Don Norman (<i>The Design of Everyday Things</i>) and Jakob Nielsen’s usability heuristics give the core ideas.</p>'+
+ '<div class="box"><h4>Try it: which version would you trust?</h4><div class="ix">'+
+ '<div class="ixcard"><span class="tag">Version A</span><p>English Speaking Workshop · Thu, 20 Nov</p><button type="button" class="plain" id="ixA">register here</button><p class="ixmsg" id="ixAmsg" aria-live="polite"></p></div>'+
+ '<div class="ixcard"><span class="tag">Version B</span><p>English Speaking Workshop · Thu, 20 Nov</p><button type="button" class="btn primary" id="ixB" style="width:max-content">Register for the workshop</button><p class="ixmsg" id="ixBmsg" aria-live="polite"></p></div>'+
+ '</div><p class="source">Click both. A gives no signifier (it doesn’t look clickable) and no feedback. B looks like a button, says what it does, confirms the result and lets you undo it.</p></div>'+
+ '<div class="grid2"><div class="box"><h4>Five principles</h4><ul>'+
+ '<li><b>Signifiers:</b> make actions visible: button shapes, underlined links, icons with labels (Norman).</li>'+
+ '<li><b>Feedback:</b> every action gets a visible response: “✓ Correct”, a progress bar, “Saved” (Nielsen: visibility of system status).</li>'+
+ '<li><b>Consistency:</b> the same action looks and works the same on every page.</li>'+
+ '<li><b>User control:</b> Back, Undo, Pause, Restart (Nielsen: user control and freedom).</li>'+
+ '<li><b>Error prevention:</b> clear instructions, confirm before deleting, helpful error messages.</li></ul></div>'+
+ '<div class="box"><h4>Make it accessible</h4><ul>'+
+ '<li>Works by keyboard, not only mouse (WCAG SC 2.1.1).</li>'+
+ '<li>A visible focus outline when tabbing (SC 2.4.7).</li>'+
+ '<li>Targets at least 24 × 24 CSS px (SC 2.5.8); bigger is easier on phones.</li>'+
+ '<li>Don’t hide key information behind hover only; phones can’t hover.</li>'+
+ '<li>Moving or auto-playing content can be paused (SC 2.2.2).</li></ul>'+
+ '<h4>Ideas for your media</h4><p>Click-to-reveal hotspots on a campus map, a self-check quiz, drag-and-drop matching (with a tap alternative), branching “choose your path” stories, flip cards for vocabulary.</p></div></div>';},
+ init:function(el){var a=el.querySelector('#ixA'),b=el.querySelector('#ixB'),bm=el.querySelector('#ixBmsg'),reg=false;
+  a.onclick=function(){};
+  b.onclick=function(){reg=!reg;if(reg){b.textContent='Undo registration';bm.className='ixmsg';bm.textContent='✓ You’re registered. A confirmation was sent to your campus email.';}else{b.textContent='Register for the workshop';bm.className='ixmsg err';bm.textContent='Registration cancelled.';}};}});
+S.push({quiz:"inter",rail:"Quiz 8",title:"Check your understanding: Interactive features"});
+var CHECK=[
+ ["Visual",["One clear primary message per screen, slide or page","Consistent grid, margins and alignment across all 3 media","Limited palette: background, text, one accent","All text passes contrast (4.5:1 normal, 3:1 large)","Color never carries meaning alone"]],
+ ["Audio",["Narration or sound supports, not repeats, the visuals","Captions for every video","Transcript for audio-only content","Background music doesn’t cover speech"]],
+ ["Reading (text)",["Real headings and a logical reading order","1–2 typefaces; levels by size and weight","Left-aligned body text, short paragraphs","Practical details (dates, links) plain and easy to find"]],
+ ["Kinesthetic",["Buttons look clickable and say what they do","Interactive parts work by keyboard and on a phone","Feedback after each action (e.g., quiz shows ✓/✗ in text, not just color)","Back, Undo or Restart is always available","Targets big enough to tap (at least 24 × 24 px)","Written URL beside every QR code"]]
+];
+S.push({rail:"Your project",html:function(){
+ var h='<div class="eyebrow">Apply it</div><h2>Design checklist for your final project media</h2>'+
+ '<p>Use this list while planning and before your consultation with Ms. Erina. Pick your target audience (department, lecturers or students), then check each media against all four modes.</p>'+
+ '<div class="box"><h4>Quick design brief (answer in your group)</h4><ol><li><b>Audience:</b> department, lecturers, or students? Which real need?</li><li><b>Main message / action</b> of each media, in one sentence.</li><li><b>Hierarchy plan:</b> primary, secondary, details, action.</li><li><b>System:</b> shared grid, palette and type styles that make your 3 media look like one set.</li></ol></div>'+
+ '<div class="progress" aria-hidden="true"><i id="prog"></i></div><p class="source" id="progtxt"></p><div class="checks">';
+ CHECK.forEach(function(g,gi){h+='<div class="box"><h4>'+esc(g[0])+'</h4>';g[1].forEach(function(t,ti){var id='ck'+gi+'_'+ti;h+='<label for="'+id+'"><input type="checkbox" id="'+id+'"> '+esc(t)+'</label>';});h+='</div>';});
+ return h+'</div>';},
+ init:function(el){var boxes=el.querySelectorAll('.checks input');var saved={};try{saved=JSON.parse(localStorage.getItem('mdp-checks')||'{}');}catch(e){}
+  function upd(){var n=0;boxes.forEach(function(b){if(b.checked)n++;});el.querySelector('#prog').style.width=(n/boxes.length*100)+'%';el.querySelector('#progtxt').textContent=n+' of '+boxes.length+' checked';}
+  boxes.forEach(function(b){b.checked=!!saved[b.id];b.onchange=function(){saved[b.id]=b.checked;try{localStorage.setItem('mdp-checks',JSON.stringify(saved));}catch(e){}upd();};});upd();}});
+S.push({rail:"Summary",html:function(){return '<div class="eyebrow">Summary</div><h2>Good design is organized meaning</h2>'+
+ '<div class="grid2"><div class="box"><ul><li><b>Hierarchy</b> directs attention.</li><li><b>Layout</b> organizes information in space.</li><li><b>Typography</b> makes language visible and readable.</li><li><b>Color</b> creates contrast and relationships.</li><li><b>Composition</b> unifies everything.</li><li><b>Accessibility</b> lets more people use it.</li><li><b>Interactive features</b> invite action and answer it with feedback.</li></ul></div>'+
+ '<div class="box"><h4>Final evaluation questions</h4><ul><li>Main message clear in a few seconds?</li><li>Related details grouped? Reading order clear?</li><li>Text readable at real size, on a phone?</li><li>Color supports labels instead of replacing them?</li><li>Can someone who can’t scan the QR code still use it?</li><li>Does every click or tap get a visible response?</li></ul></div></div>'+
+ '<div class="box"><h4>References</h4><ul class="refs">'+
+ '<li>Albers, J. (1963). <i>Interaction of Color</i>. Yale University Press.</li>'+
+ '<li>Bringhurst, R. (2012). <i>The Elements of Typographic Style</i> (4th ed.). Hartley &amp; Marks.</li>'+
+ '<li>Kress, G., &amp; van Leeuwen, T. (2021). <i>Reading Images: The Grammar of Visual Design</i> (3rd ed.). Routledge.</li>'+
+ '<li>Nielsen, J. (1994). Enhancing the explanatory power of usability heuristics. <i>Proceedings of the SIGCHI Conference on Human Factors in Computing Systems</i>, 152–158.</li>'+
+ '<li>Norman, D. (2013). <i>The Design of Everyday Things</i> (Revised and expanded ed.). Basic Books.</li>'+
+ '<li>Müller-Brockmann, J. (1981). <i>Grid Systems in Graphic Design</i>. Niggli.</li>'+
+ '<li>Rubin, E. (1921). <i>Visuell wahrgenommene Figuren</i>. Gyldendal. (figure–ground)</li>'+
+ '<li>Wertheimer, M. (1923). Untersuchungen zur Lehre von der Gestalt II. <i>Psychologische Forschung, 4</i>, 301–350.</li>'+
+ '<li>W3C. (2023). <i>Web Content Accessibility Guidelines (WCAG) 2.2</i>. <a href="https://www.w3.org/TR/WCAG22/" target="_blank" rel="noopener">w3.org/TR/WCAG22</a></li></ul></div>';}});
+
+/* ---------- Engine ---------- */
+var PERM={};function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+var cur=0,checked={},answers={},app=document.getElementById('slide'),rail=document.getElementById('rail');
+function quizHtml(s){var qs=QUIZ[s.quiz];var h='<div class="eyebrow">Check your understanding</div><h2>'+esc(s.title.replace('Check your understanding: ',''))+'</h2><p class="source">Answer all 5, then press Check Answers to unlock Next.</p><div class="quiz">';
+ qs.forEach(function(q,i){var id=s.quiz+i;h+='<div class="q" data-i="'+i+'"><div class="qt">'+(i+1)+'. '+esc(q.q)+'</div>';
+  if(q.o){var perm=PERM[id]||(PERM[id]=shuffle(q.o.map(function(_,k){return k;})));h+='<div class="opts" role="radiogroup" aria-label="Question '+(i+1)+'">';perm.forEach(function(k,pos){h+='<label class="opt"><input type="radio" name="'+id+'" value="'+k+'"> <span>'+String.fromCharCode(65+pos)+'. '+esc(q.o[k])+'</span></label>';});h+='</div>';}
+  else h+='<label class="source" for="'+id+'">Type your answer</label><input class="blank" id="'+id+'" type="text" autocomplete="off">';
+  h+='<div class="fb" id="fb-'+id+'"></div></div>';});
+ return h+'</div><p class="notice" id="notice" role="alert"></p><p class="score" id="score"></p>';}
+function norm(s){return String(s).toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();}
+function grade(s){var qs=QUIZ[s.quiz],ok=0,missing=0;
+ qs.forEach(function(q,i){var id=s.quiz+i,v;if(q.o){var r=app.querySelector('input[name="'+id+'"]:checked');v=r?+r.value:null;}else{v=app.querySelector('#'+id).value.trim()||null;}
+  if(v===null)missing++;});
+ if(missing){app.querySelector('#notice').textContent='Please answer all questions first ('+missing+' left).';return;}
+ app.querySelector('#notice').textContent='';
+ qs.forEach(function(q,i){var id=s.quiz+i,fb=app.querySelector('#fb-'+id),right,shown;
+  if(q.o){var v=+app.querySelector('input[name="'+id+'"]:checked').value;right=v===q.a;shown=String.fromCharCode(65+PERM[id].indexOf(q.a))+'. '+q.o[q.a];}
+  else{var t=norm(app.querySelector('#'+id).value);right=q.blank.some(function(b){return norm(b)===t;});shown=q.blank[0];}
+  if(right)ok++;fb.className='fb '+(right?'ok':'no');fb.textContent=right?'✓ Correct':'✗ Not quite. Correct answer: '+shown;});
+ app.querySelector('#score').textContent='Score: '+ok+' / '+qs.length;
+ app.querySelectorAll('.quiz input').forEach(function(i){if(i.type==='radio'){if(i.checked)i.setAttribute('checked','');}else i.setAttribute('value',i.value);});
+ checked[s.quiz]=true;answers[s.quiz]=app.querySelector('.quiz').innerHTML;render(true);app.querySelectorAll('.quiz input').forEach(function(i){i.disabled=true;});}
+function maxReach(){var m=0;for(var i=0;i<S.length;i++){m=i;if(S[i].quiz&&!checked[S[i].quiz])break;}return m;}
+function drawRail(){var reach=maxReach();rail.innerHTML=S.map(function(s,i){return '<button type="button" data-go="'+i+'"'+(i===cur?' aria-current="step"':'')+(i>reach?' disabled':'')+'>'+esc(s.rail)+'</button>';}).join('')+'<span class="count">'+(cur+1)+' / '+S.length+'</span>';
+ rail.querySelectorAll('[data-go]').forEach(function(b){b.onclick=function(){go(+b.dataset.go);};});}
+function render(keepQuiz){var s=S[cur],h;
+ if(s.quiz){var done=checked[s.quiz];
+  if(keepQuiz&&done){app.querySelector('.nav').outerHTML=navHtml(s);bindNav(s);drawRail();return;}
+  h=quizHtml(s);}else h=s.html();
+ app.innerHTML=h+navHtml(s);
+ if(s.quiz&&checked[s.quiz]){app.querySelector('.quiz').innerHTML=answers[s.quiz];app.querySelectorAll('.quiz input').forEach(function(i){i.disabled=true;});}
+ if(s.init)s.init(app);bindNav(s);drawRail();}
+function navHtml(s){var last=cur===S.length-1,h='<div class="nav"><button type="button" class="btn" id="prev"'+(cur===0?' disabled':'')+'>← Previous</button>';
+ if(s.quiz&&!checked[s.quiz])h+='<button type="button" class="btn primary" id="check">Check Answers</button>';
+ else h+='<button type="button" class="btn primary" id="next"'+(last?' disabled':'')+'>'+(last?'End of lecture':'Next →')+'</button>';
+ return h+'</div>';}
+function bindNav(s){var p=app.querySelector('#prev'),n=app.querySelector('#next'),c=app.querySelector('#check');
+ if(p)p.onclick=function(){go(cur-1);};if(n)n.onclick=function(){go(cur+1);};if(c)c.onclick=function(){grade(s);};}
+function go(i){if(i<0||i>=S.length||i>maxReach())return;cur=i;render();app.focus({preventScroll:true});window.scrollTo({top:0});}
+document.addEventListener('keydown',function(e){if(e.target.closest('input,textarea'))return;if(e.key==='ArrowRight')go(cur+1);if(e.key==='ArrowLeft')go(cur-1);});
+render();
+})();
+</script>
+</body>
+</html>
